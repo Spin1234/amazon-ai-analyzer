@@ -1,32 +1,20 @@
-import re
+def estimate_revenue(price, bsr):
 
-def get_bsr_number(bsr_text):
-    if not bsr_text:
-        return 5000
-
-    match = re.search(r'#([\d,]+)', bsr_text)
-    if match:
-        return int(match.group(1).replace(",", ""))
-
-    return 5000
-
-
-def estimate_sales(bsr):
-    if bsr < 100: return 10000
-    elif bsr < 500: return 3000
-    elif bsr < 1000: return 1500
-    elif bsr < 5000: return 500
-    else: return 100
-
-
-def estimate_revenue(price, bsr_text):
     try:
-        price = int(price.replace(",", ""))
+        price = int(str(price).replace(",", ""))
     except:
         price = 0
 
-    bsr = get_bsr_number(bsr_text)
-    sales = estimate_sales(bsr)
-    revenue = sales * price
+    if not bsr:
+        return 100, price * 100, 5000
 
-    return sales, revenue, bsr
+    if bsr < 100:
+        sales = 10000
+    elif bsr < 500:
+        sales = 3000
+    elif bsr < 1000:
+        sales = 1500
+    else:
+        sales = 500
+
+    return sales, sales * price, bsr
