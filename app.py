@@ -1,26 +1,43 @@
-from dotenv import load_dotenv
-load_dotenv()
 from flask import Flask, render_template, request
 from scraper import get_product_data, get_reviews
 from analyzer import analyze
 from revenue import estimate_revenue
 from groq_ai import generate_product_insights, competitor_analysis, generate_listing
-from utils import calculate_score, extract_asin
+from utils import extract_asin, calculate_score
 
 app = Flask(__name__)
 
+
 def process_product(url):
+    print("INPUT URL:", url)
+
     asin = extract_asin(url)
+    print("EXTRACTED ASIN:", asin)
+
     if not asin:
-        return None
+        return {
+            "title": "Invalid Product URL",
+            "price": "0",
+            "sales": 0,
+            "revenue": 0,
+            "sentiment": 0,
+            "keywords": [],
+            "insights": {},
+            "listing": {},
+            "score": 0
+        }
 
     data = get_product_data(url)
+    print("SCRAPED DATA:", data)
+
     reviews = get_reviews(asin)
 
     analysis = analyze(reviews)
-    sales, revenue, bsr = estimate_revenue(data["price"] or "0", data["bsr"])
+
+    sales, revenue, bsr = estimate_revenue(data["price"], data["bsr"])
 
     insights = generate_product_insights(data["title"], reviews, analysis["keywords"])
+
     listing = generate_listing(data["title"], insights)
 
     score = calculate_score(analysis["sentiment"], bsr)
@@ -45,35 +62,26 @@ def index():
         main_url = request.form.get("main_url")
         competitor_urls = request.form.get("competitor_urls").split("\n")
 
-        # 🔹 Process YOUR product
         main_product = process_product(main_url)
 
-        # 🔹 Process competitors
         competitors = []
         for url in competitor_urls:
             url = url.strip()
-            if not url:
-                continue
+            if url:
+                competitors.append(process_product(url))
 
-            result = process_product(url)
-            if result:
-                competitors.append(result)
-
-        # 🔥 AI Comparison
-        comp_analysis = competitor_analysis({
+        comp = competitor_analysis({
             "your_product": main_product,
             "competitors": competitors
         })
 
-        return render_template(
-            "result.html",
-            main=main_product,
-            competitors=competitors,
-            comp=comp_analysis
-        )
+        return render_template("result.html",
+                               main=main_product,
+                               competitors=competitors,
+                               comp=comp)
 
     return render_template("index.html")
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run(debug=True)
