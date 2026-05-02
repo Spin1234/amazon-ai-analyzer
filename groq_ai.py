@@ -3,7 +3,6 @@ import json
 import re
 import os
 
-## client = Groq(api_key="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")
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 # 🔥 Call Groq API
