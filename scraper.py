@@ -1,50 +1,59 @@
 import requests
 from bs4 import BeautifulSoup
-import time
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0",
     "Accept-Language": "en-US,en;q=0.9"
 }
 
-def safe(soup, selector):
-    tag = soup.select_one(selector)
-    return tag.get_text(strip=True) if tag else None
-
 
 def get_product_data(url):
-    res = requests.get(url, headers=HEADERS)
-    soup = BeautifulSoup(res.content, "lxml")
+    try:
+        res = requests.get(url, headers=HEADERS, timeout=5)
+        soup = BeautifulSoup(res.content, "lxml")
 
-    title = safe(soup, "#productTitle")
-    price = safe(soup, ".a-price-whole")
-    rating = safe(soup, ".a-icon-alt")
+        title_tag = soup.select_one("#productTitle")
+        price_tag = soup.select_one(".a-price-whole")
 
-    bsr = None
-    for li in soup.select("#detailBulletsWrapper_feature_div li"):
-        if "Best Sellers Rank" in li.text:
-            bsr = li.text.strip()
+        title = title_tag.get_text(strip=True) if title_tag else "Not Found"
+        price = price_tag.get_text(strip=True) if price_tag else "0"
 
-    return {
-        "title": title,
-        "price": price,
-        "rating": rating,
-        "bsr": bsr
-    }
+        bsr = None
+        for li in soup.select("#detailBulletsWrapper_feature_div li"):
+            if "Best Sellers Rank" in li.text:
+                bsr = li.text.strip()
+
+        print("TITLE:", title)
+
+        return {
+            "title": title,
+            "price": price,
+            "bsr": bsr
+        }
+
+    except Exception as e:
+        print("SCRAPER ERROR:", e)
+        return {
+            "title": "Error",
+            "price": "0",
+            "bsr": None
+        }
 
 
-def get_reviews(asin, pages=3):
-    reviews = []
+def get_reviews(asin):
+    if not asin:
+        return ["No reviews available"]
 
-    for page in range(1, pages + 1):
-        url = f"https://www.amazon.in/product-reviews/{asin}?pageNumber={page}"
-
+    try:
+        url = f"https://www.amazon.in/product-reviews/{asin}"
         res = requests.get(url, headers=HEADERS)
         soup = BeautifulSoup(res.content, "lxml")
 
+        reviews = []
         for r in soup.select(".review-text-content span"):
-            reviews.append(r.get_text(strip=True))
+            reviews.append(r.text.strip())
 
-        time.sleep(1)
+        return reviews if reviews else ["No reviews found"]
 
-    return reviews
+    except:
+        return ["No reviews available"]
