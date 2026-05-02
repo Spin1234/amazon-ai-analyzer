@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Results</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<h1>Your Product</h1>
+
+<div class="card">
+<h2>{{main.title}}</h2>
+<p>Score: {{main.score}}</p>
+<p>Revenue: ₹{{main.revenue}}</p>
+
+<h3>🟡 Key Purchase Criteria</h3>
+<ul>
+{% for c in main.insights.purchase_criteria %}
+<li>{{ c }}</li>
+{% endfor %}
+</ul>
+
+<h3>Drivers</h3>
+<ul>{% for d in main.insights.drivers %}<li>{{d}}</li>{% endfor %}</ul>
+
+<h3>Pain Points</h3>
+<ul>{% for d in main.insights.pain_points %}<li>{{d}}</li>{% endfor %}</ul>
+
+<h3>Recommendations</h3>
+<ul>{% for d in main.insights.recommendations %}<li>{{d}}</li>{% endfor %}</ul>
+
+<h3>Generated Listing</h3>
+<p><b>{{main.listing.title}}</b></p>
+<ul>{% for b in main.listing.bullets %}<li>{{b}}</li>{% endfor %}</ul>
+
+</div>
+
+<h1>Competitors</h1>
+
+{% for p in competitors %}
+<div class="card">
+<h2>{{p.title}}</h2>
+<p>Score: {{p.score}}</p>
+<p>Revenue: ₹{{p.revenue}}</p>
+</div>
+{% endfor %}
+
+<h1>AI Comparison</h1>
+
+<ul>
+{% for g in comp.gap_opportunities %}<li>{{g}}</li>{% endfor %}
+</ul>
+
+</body>
+</html>
