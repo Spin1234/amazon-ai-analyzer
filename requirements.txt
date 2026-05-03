@@ -1,1 +1,8 @@
-ÿþ
+Flask
+requests
+beautifulsoup4
+lxml
+textblob
+groq
+python-dotenv
+gunicorn
