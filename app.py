@@ -7,6 +7,7 @@ from revenue import estimate_revenue
 from groq_ai import generate_product_insights, competitor_analysis, generate_listing
 from utils import calculate_score, extract_asin
 
+
 app = Flask(__name__)
 
 def process_product(url):
